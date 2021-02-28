@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::fs::File;
 
 #[derive(FromArgs)]
-/// Create lengthy files.
+/// Inflate files.
 struct Inflate {
     /// data size in bytes (required)
     #[argh(option, short = 's')]
