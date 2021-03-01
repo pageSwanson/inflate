@@ -9,9 +9,11 @@ struct Inflate {
     #[argh(option, short = 's')]
     size: u64,
 
-    //// unit for size of data
-    //#[argh(option, short = 'u')]
-    //units: char,
+    /// unit for size of data.
+    /// options are 'B' byte, 'k' kilobyte, 'M' megabyte
+    /// (defaults to 'B')
+    #[argh(option, short = 'u', default = "'B'")]
+    units: char,
 
     /// new file path (creates 'balloon.txt' in working dir by default)
     #[argh(option, short = 'p', default = "PathBuf::from(r\"balloon.txt\")")]
@@ -21,10 +23,17 @@ struct Inflate {
 fn main() {
     let inflate: Inflate = argh::from_env();
 
-    println!("inflate will create a file with data size {} in bytes!", inflate.size);
-    println!("File will be created as {:#?}!", &inflate.path);
+    println!("inflate will create a file with data size {}{}!", inflate.size, inflate.units);
+    println!("File will be created at {:#?}!", &inflate.path);
 
-    let file = File::create(inflate.path).expect("could not create file");
-    file.set_len(inflate.size)
+    let size_bytes: u64 = match inflate.units {
+        'B' => { inflate.size },
+        'k' => { inflate.size * 1000 },
+        'M' => { inflate.size * 1000 * 1000 },
+         _  => { panic!("Unsupported unit {:#?}.\nUse '--help' for supported units list.", inflate.units) }
+    };
+
+    let file = File::create(inflate.path).unwrap();
+    file.set_len(size_bytes)
         .expect("could not write to file");
 }
